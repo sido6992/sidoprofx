@@ -31,5 +31,5 @@ const CONFIG = {
   // The backend proxies the OAuth code→token exchange so the browser
   // never needs Deriv's app secret and never hits CORS issues.
   // Point this at your local dev server or your deployed Render URL.
-  BACKEND_URL: 'http://localhost:4000'
+  BACKEND_URL: 'https://sidopro.onrender.com'
 };
