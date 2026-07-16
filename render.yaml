@@ -9,7 +9,7 @@ services:
     startCommand: npm start
     envVars:
       - key: PORT
-        value: 4000
+        value: 10000
       - key: FRONTEND_URL
         sync: false
       - key: DERIV_APP_ID
