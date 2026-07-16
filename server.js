@@ -10,7 +10,7 @@ const cors = require('cors');
 const routes = require('./routes');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 10000;
 
 // Only allow the configured frontend origin (falls back to '*' for local dev)
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
