@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Signing in… — Sido Pro FX</title>
+<style>
+  html, body {
+    margin: 0; height: 100%;
+    background: #0A0E1A;
+    color: #E7EBF3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', Segoe UI, Roboto, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .box { text-align: center; padding: 24px; max-width: 340px; }
+  .spinner {
+    width: 40px; height: 40px; margin: 0 auto 18px;
+    border: 3px solid rgba(255,255,255,.15);
+    border-top-color: #00E5FF;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h1 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+  p { font-size: 13px; color: #9AA5B8; margin: 0; line-height: 1.5; }
+  .error { color: #FF5C7A; }
+  a.retry {
+    display: inline-block; margin-top: 16px;
+    color: #00E5FF; text-decoration: none; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spinner" id="spinner"></div>
+  <h1 id="title">Signing you in…</h1>
+  <p id="message">Exchanging your login with Deriv. This only takes a second.</p>
+  <a class="retry" id="retryLink" href="./" style="display:none;">← Back to Sido Pro FX</a>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function () {
+  const spinner = document.getElementById('spinner');
+  const title   = document.getElementById('title');
+  const message = document.getElementById('message');
+  const retry   = document.getElementById('retryLink');
+
+  function fail(text) {
+    spinner.style.display = 'none';
+    title.textContent = 'Login failed';
+    title.classList.add('error');
+    message.textContent = text;
+    retry.style.display = 'inline-block';
+    sessionStorage.setItem('db_oauth_error', text);
+  }
+
+  const p     = new URLSearchParams(window.location.search);
+  const code  = p.get('code');
+  const state = p.get('state');
+  const oauthErr = p.get('error_description') || p.get('error');
+
+  if (oauthErr) {
+    fail(oauthErr);
+    return;
+  }
+
+  if (!code || !state) {
+    fail('Missing authorization code from Deriv. Please try logging in again.');
+    return;
+  }
+
+  const savedState = sessionStorage.getItem('db_pkce_state');
+  const verifier    = sessionStorage.getItem('db_pkce_verifier');
+  sessionStorage.removeItem('db_pkce_state');
+  sessionStorage.removeItem('db_pkce_verifier');
+
+  if (!verifier || state !== savedState) {
+    fail('Login state mismatch — for your safety, please try logging in again.');
+    return;
+  }
+
+  try {
+    const res = await fetch(CONFIG.BACKEND_URL + '/api/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        verifier,
+        redirect_uri: CONFIG.REDIRECT_URI
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      throw new Error(data.error || 'Token exchange failed');
+    }
+
+    const expiry = Date.now() + ((data.expires_in || 300) * 1000);
+    sessionStorage.setItem('db_access_token', data.access_token);
+    sessionStorage.setItem('db_token_expiry', String(expiry));
+    if (data.refresh_token) {
+      sessionStorage.setItem('db_refresh_token', data.refresh_token);
+    }
+
+    title.textContent = 'Success!';
+    message.textContent = 'Redirecting you back to the app…';
+    window.location.replace('./');
+  } catch (err) {
+    fail(err.message + '. Please try logging in again.');
+  }
+})();
+</script>
+</body>
+</html>
