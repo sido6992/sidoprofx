@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sido Pro FX</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="tb-logo">
+      <svg viewBox="0 0 28 28" fill="none">
+        <defs>
+          <linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#00E5FF"/>
+            <stop offset="1" stop-color="#7C3AED"/>
+          </linearGradient>
+        </defs>
+        <path d="M4 14 L14 4 L24 14 L14 24Z" stroke="url(#lg1)" stroke-width="2" fill="none"/>
+        <circle cx="14" cy="14" r="4" fill="url(#lg1)"/>
+      </svg>
+      <span>Sido Pro FX</span>
+    </div>
+    <div class="tb-status">
+      <div class="conn-dot" id="connDot"></div>
+      <span class="conn-label" id="connLabel">Offline</span>
+    </div>
+    <div class="tb-bal" id="topBal">$0.00</div>
+  </div>
+
+  <!-- PAGES -->
+  <div id="pages">
+
+    <!-- ══════════════ PAGE: DASHBOARD ══════════════ -->
+    <div class="page active" id="pg-dash">
+
+      <!-- Balance Card -->
+      <div class="balance-card">
+        <div class="bal-row">
+          <div>
+            <div class="bal-type">💎 Real Account</div>
+            <div class="bal-account" id="accountId">Not connected</div>
+          </div>
+          <div style="text-align:right">
+            <span class="pl-chip win" id="dayPL">+$0.00</span>
+          </div>
+        </div>
+        <div class="bal-amount" id="balAmount">$0.00</div>
+        <div class="bal-currency" id="balCurrency">USD</div>
+        <div class="bal-stats">
+          <div class="bal-stat">
+            <div class="bal-stat-label">Today Wins</div>
+            <div class="bal-stat-val positive" id="winCount">0</div>
+          </div>
+          <div class="bal-stat">
+            <div class="bal-stat-label">Today Losses</div>
+            <div class="bal-stat-val negative" id="lossCount">0</div>
+          </div>
+          <div class="bal-stat">
+            <div class="bal-stat-label">Win Rate</div>
+            <div class="bal-stat-val" id="winRate" style="color:var(--accent-1)">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Ticker -->
+      <div class="ticker-strip" id="tickerStrip">
+        <div class="ticker-item"><span class="tick-name">V75</span><span class="tick-val positive" id="t-v75">—</span></div>
+        <div class="ticker-item"><span class="tick-name">V10</span><span class="tick-val positive" id="t-v10">—</span></div>
+        <div class="ticker-item"><span class="tick-name">BOOM1000</span><span class="tick-val positive" id="t-b1k">—</span></div>
+        <div class="ticker-item"><span class="tick-name">CRASH500</span><span class="tick-val negative" id="t-c5">—</span></div>
+        <div class="ticker-item"><span class="tick-name">EUR/USD</span><span class="tick-val" id="t-eurusd">—</span></div>
+      </div>
+
+      <!-- AI Signals -->
+      <div class="sect-head">
+        <div class="sect-title">⚡ Live AI Signals</div>
+        <button class="btn-refresh" id="refreshSigBtn" onclick="manualRefreshSignals()">
+          <span class="refresh-icon" id="refreshIcon">🔄</span> Refresh
+        </button>
+      </div>
+      <div class="sect-sub" id="sigUpdate" style="margin-bottom:10px">Updating…</div>
+
+      <!-- Best Market Highlight -->
+      <div class="best-market-card" id="bestMarketCard">
+        <div class="bm-glow"></div>
+        <div class="bm-label">🏆 BEST MARKET RIGHT NOW</div>
+        <div class="bm-body">
+          <div class="bm-info">
+            <div class="bm-name" id="bmName">Scanning…</div>
+            <div class="bm-reason" id="bmReason">Analyzing all markets for the strongest setup</div>
+          </div>
+          <div class="bm-conf-ring">
+            <div class="bm-conf-val" id="bmConf">—</div>
+            <div class="bm-conf-label">conf</div>
+          </div>
+        </div>
+        <div class="bm-action" id="bmAction">—</div>
+      </div>
+
+      <div class="signal-grid" id="signalGrid">
+        <!-- injected by JS -->
+      </div>
+
+      <!-- Trade History -->
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">📋 Recent Trades</div>
+        <div id="tradeHistory">
+          <div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">No trades yet today</div>
+        </div>
+      </div>
+
+    </div><!-- /dash -->
+
+    <!-- ══════════════ PAGE: BOT ══════════════ -->
+    <div class="page" id="pg-bot">
+
+      <!-- Tab bar -->
+      <div class="tab-bar" id="botTabBar">
+        <div class="tab-item active" onclick="switchBotTab('run',this)">▶ Run Bot</div>
+        <div class="tab-item" onclick="switchBotTab('free',this)">🎁 Free Bots</div>
+        <div class="tab-item" onclick="switchBotTab('build',this)">🔧 Builder</div>
+        <div class="tab-item" onclick="switchBotTab('import',this)">📥 Import</div>
+      </div>
+
+      <!-- RUN BOT -->
+      <div id="botTab-run">
+        <div class="card card-glow">
+          <div class="card-title">⚙️ Bot Configuration</div>
+          <div class="input-row">
+            <span class="input-label">Market</span>
+            <select class="sel" id="botMarket" onchange="updateBotMarket()">
+              <optgroup label="Volatility Index">
+                <option>Volatility 10 Index</option>
+                <option>Volatility 25 Index</option>
+                <option selected>Volatility 75 Index</option>
+                <option>Volatility 100 Index</option>
+                <option>Volatility 10 (1s)</option>
+                <option>Volatility 25 (1s)</option>
+                <option>Volatility 50 (1s)</option>
+                <option>Volatility 75 (1s)</option>
+                <option>Volatility 100 (1s)</option>
+              </optgroup>
+              <optgroup label="Boom & Crash">
+                <option>Boom 300</option>
+                <option>Boom 500</option>
+                <option>Boom 1000</option>
+                <option>Crash 300</option>
+                <option>Crash 500</option>
+                <option>Crash 1000</option>
+              </optgroup>
+              <optgroup label="Digits">
+                <option>Digits – Over/Under</option>
+                <option>Digits – Even/Odd</option>
+                <option>Digits – Matches</option>
+                <option>Digits – Differs</option>
+              </optgroup>
+              <optgroup label="Rise / Fall">
+                <option>Rise/Fall – V75</option>
+                <option>Rise/Fall – V10</option>
+                <option>Rise/Fall – V100</option>
+              </optgroup>
+              <optgroup label="Accumulators">
+                <option>Accumulators – V10</option>
+                <option>Accumulators – V25</option>
+                <option>Accumulators – V75</option>
+              </optgroup>
+              <optgroup label="Forex">
+                <option>EUR/USD</option>
+                <option>GBP/USD</option>
+                <option>USD/JPY</option>
+                <option>AUD/USD</option>
+                <option>USD/CHF</option>
+              </optgroup>
+              <optgroup label="Indices">
+                <option>US 30 (Wall St)</option>
+                <option>US 500 (S&amp;P)</option>
+                <option>JP 225 (Nikkei)</option>
+                <option>UK 100 (FTSE)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="input-row">
+            <span class="input-label">Contract</span>
+            <select class="sel" id="botContract">
+              <option>Rise/Fall</option>
+              <option>Higher/Lower</option>
+              <option>Digits Even/Odd</option>
+              <option>Digits Over/Under</option>
+              <option>Touch/No Touch</option>
+              <option>Asian Up/Down</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <span class="input-label">Stake</span>
+            <div class="inp-stepper">
+              <button onclick="changeVal('stake',-1)">−</button>
+              <span id="stakeVal">1.00</span>
+              <button onclick="changeVal('stake',1)">+</button>
+            </div>
+            <select class="sel" style="width:80px;flex:none;margin-left:6px">
+              <option>USD</option><option>EUR</option><option>GBP</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <span class="input-label">Duration</span>
+            <div class="inp-stepper">
+              <button onclick="changeVal('dur',-1)">−</button>
+              <span id="durVal">5</span>
+              <button onclick="changeVal('dur',1)">+</button>
+            </div>
+            <select class="sel" style="width:80px;flex:none;margin-left:6px" id="durUnit">
+              <option>Ticks</option><option>Seconds</option><option>Minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Martingale / Risk -->
+        <div class="card">
+          <div class="card-title">🎲 Martingale & Risk</div>
+          <div class="input-row">
+            <span class="input-label">Multiplier</span>
+            <div class="inp-stepper">
+              <button onclick="changeVal('multi',-0.5)">−</button>
+              <span id="multiVal">2.0×</span>
+              <button onclick="changeVal('multi',0.5)">+</button>
+            </div>
+          </div>
+          <div class="input-row">
+            <span class="input-label">Take Profit</span>
+            <input class="inp" type="number" id="tpVal" value="20" placeholder="USD">
+          </div>
+          <div class="input-row">
+            <span class="input-label">Stop Loss</span>
+            <input class="inp" type="number" id="slVal" value="10" placeholder="USD">
+          </div>
+          <div class="input-row">
+            <span class="input-label">Max Trades</span>
+            <div class="inp-stepper">
+              <button onclick="changeVal('maxT',-1)">−</button>
+              <span id="maxTVal">100</span>
+              <button onclick="changeVal('maxT',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Start/Stop -->
+        <div class="run-btn-wrap">
+          <button class="btn-start" id="startStopBtn" onclick="toggleBot()">
+            <span class="pulse-ring" id="pulseRing" style="display:none"></span>
+            <span id="startStopTxt">▶  START BOT</span>
+          </button>
+        </div>
+
+        <!-- Bot stats live -->
+        <div class="card" id="botLiveStats">
+          <div class="card-title">📊 Bot Live Stats</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="bot-stat-item"><div class="bst-label">Trades</div><div class="bst-val" id="liveTradeCount">0</div></div>
+            <div class="bot-stat-item"><div class="bst-label">Profit</div><div class="bst-val positive" id="liveProfit">$0.00</div></div>
+            <div class="bot-stat-item"><div class="bst-label">Win%</div><div class="bst-val" id="liveWin" style="color:var(--accent-1)">0%</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FREE BOTS -->
+      <div id="botTab-free" class="hidden">
+        <div class="sect-head"><div class="sect-title">🎁 Free Bots Library</div></div>
+        <!-- Bot cards -->
+        <div id="freeBotList"></div>
+      </div>
+
+      <!-- BOT BUILDER -->
+      <div id="botTab-build" class="hidden">
+        <div class="sect-head"><div class="sect-title">🔧 Bot Builder</div></div>
+        <div class="builder-step">
+          <div class="step-num">1</div>
+          <div class="step-title">Select Trigger Condition</div>
+          <select class="sel">
+            <option>RSI Crosses 30 (Oversold)</option>
+            <option>RSI Crosses 70 (Overbought)</option>
+            <option>MACD Bullish Crossover</option>
+            <option>MACD Bearish Crossover</option>
+            <option>Price > EMA 20</option>
+            <option>Price &lt; EMA 20</option>
+            <option>Bollinger Band Touch Lower</option>
+            <option>Bollinger Band Touch Upper</option>
+            <option>Last digit is Even</option>
+            <option>Last digit is Odd</option>
+            <option>Consecutive Same Direction (2)</option>
+          </select>
+        </div>
+        <div class="builder-step">
+          <div class="step-num">2</div>
+          <div class="step-title">Select Action</div>
+          <select class="sel">
+            <option>Buy Rise Contract</option>
+            <option>Buy Fall Contract</option>
+            <option>Buy Even Contract</option>
+            <option>Buy Odd Contract</option>
+            <option>Buy Over X Contract</option>
+            <option>Buy Under X Contract</option>
+          </select>
+        </div>
+        <div class="builder-step">
+          <div class="step-num">3</div>
+          <div class="step-title">On Loss Strategy</div>
+          <select class="sel">
+            <option>Martingale (×2)</option>
+            <option>Fixed Stake</option>
+            <option>D'Alembert (+1 unit)</option>
+            <option>Fibonacci Sequence</option>
+            <option>Reverse Martingale</option>
+          </select>
+        </div>
+        <div class="builder-step">
+          <div class="step-num">4</div>
+          <div class="step-title">On Win Strategy</div>
+          <select class="sel">
+            <option>Reset to Base Stake</option>
+            <option>Keep Same Stake</option>
+            <option>Paroli (Double on win)</option>
+          </select>
+        </div>
+        <div style="margin-top:4px">
+          <button class="btn btn-primary btn-full" onclick="showToast('🤖 Custom bot saved!')">💾 Save Custom Bot</button>
+        </div>
+      </div>
+
+      <!-- XML/HTML IMPORT -->
+      <div id="botTab-import" class="hidden">
+        <div class="sect-head"><div class="sect-title">📥 Import Bot</div></div>
+        <div class="tab-bar" style="margin-bottom:14px">
+          <div class="tab-item active" onclick="switchImportTab('xml',this)">XML File</div>
+          <div class="tab-item" onclick="switchImportTab('html',this)">HTML File</div>
+          <div class="tab-item" onclick="switchImportTab('paste',this)">Paste Code</div>
+        </div>
+        <div id="importTab-xml">
+          <div class="drop-zone" onclick="document.getElementById('xmlFile').click()" id="dropZoneXML">
+            <div class="dz-icon">📄</div>
+            <p>Tap to select XML bot file</p>
+            <span>or drag and drop here</span>
+            <input type="file" id="xmlFile" accept=".xml" class="hidden" onchange="handleFileImport(this,'xml')">
+          </div>
+        </div>
+        <div id="importTab-html" class="hidden">
+          <div class="drop-zone" onclick="document.getElementById('htmlFile').click()">
+            <div class="dz-icon">🌐</div>
+            <p>Tap to select HTML bot file</p>
+            <span>or drag and drop here</span>
+            <input type="file" id="htmlFile" accept=".html" class="hidden" onchange="handleFileImport(this,'html')">
+          </div>
+        </div>
+        <div id="importTab-paste" class="hidden">
+          <textarea class="inp" rows="8" placeholder="Paste your bot XML/HTML code here..." style="width:100%;resize:vertical;font-size:11px;line-height:1.5;font-family:'JetBrains Mono',monospace"></textarea>
+          <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="showToast('✅ Bot code loaded!')">Load Bot Code</button>
+        </div>
+        <div class="card" style="margin-top:14px;background:rgba(0,229,255,.04);border-color:rgba(0,229,255,.2)">
+          <div style="font-size:12px;color:var(--text-2);line-height:1.7">
+            📌 <strong style="color:var(--text-1)">Supported formats:</strong> Deriv XML strategy files, Binary.com HTML bots, custom JSON configs.<br>
+            After import, configure stake and risk settings before running.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bot -->
+
+    <!-- ══════════════ PAGE: CHART ══════════════ -->
+    <div class="page" id="pg-chart">
+      <div class="sect-head"><div class="sect-title">📈 Live Chart</div></div>
+      <div class="chart-toolbar">
+        <button class="chart-btn active" onclick="setChartType('candle',this)">🕯 Candle</button>
+        <button class="chart-btn" onclick="setChartType('line',this)">📈 Line</button>
+        <button class="chart-btn" onclick="setChartType('tick',this)">· Ticks</button>
+      </div>
+      <div class="chart-toolbar">
+        <button class="chart-btn active" onclick="setChartTF('1T',this)">1T</button>
+        <button class="chart-btn" onclick="setChartTF('5T',this)">5T</button>
+        <button class="chart-btn" onclick="setChartTF('1M',this)">1M</button>
+        <button class="chart-btn" onclick="setChartTF('5M',this)">5M</button>
+        <button class="chart-btn" onclick="setChartTF('15M',this)">15M</button>
+        <button class="chart-btn" onclick="setChartTF('1H',this)">1H</button>
+      </div>
+      <div class="card" style="padding:8px">
+        <canvas id="chartCanvas"></canvas>
+      </div>
+      <!-- Indicators panel -->
+      <div class="sect-head" style="margin-top:14px"><div class="sect-title">📊 Indicators</div></div>
+      <div class="indicator-grid" id="indicatorGrid">
+        <div class="ind-card">
+          <div class="ind-name">RSI (14)</div>
+          <div class="ind-val" id="ind-rsi" style="color:var(--accent-4)">—</div>
+          <div class="ind-signal" id="ind-rsi-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-rsi-bar" style="width:50%;background:var(--accent-4)"></div></div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-name">MACD</div>
+          <div class="ind-val" id="ind-macd" style="color:var(--accent-3)">—</div>
+          <div class="ind-signal" id="ind-macd-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-macd-bar" style="width:60%;background:var(--accent-3)"></div></div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-name">EMA (20)</div>
+          <div class="ind-val" id="ind-ema" style="color:var(--accent-1)">—</div>
+          <div class="ind-signal" id="ind-ema-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-ema-bar" style="width:50%;background:var(--accent-1)"></div></div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-name">Bollinger</div>
+          <div class="ind-val" id="ind-bb" style="color:var(--accent-6)">—</div>
+          <div class="ind-signal" id="ind-bb-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-bb-bar" style="width:45%;background:var(--accent-6)"></div></div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-name">Stochastic</div>
+          <div class="ind-val" id="ind-stoch" style="color:var(--accent-2);filter:brightness(1.5)">—</div>
+          <div class="ind-signal" id="ind-stoch-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-stoch-bar" style="width:40%;background:var(--accent-2)"></div></div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-name">ATR (14)</div>
+          <div class="ind-val" id="ind-atr" style="color:#F97316">—</div>
+          <div class="ind-signal" id="ind-atr-sig">—</div>
+          <div class="ind-bar-wrap"><div class="ind-bar" id="ind-atr-bar" style="width:35%;background:#F97316"></div></div>
+        </div>
+      </div>
+
+      <!-- Manual Trading -->
+      <div class="sect-head" style="margin-top:14px"><div class="sect-title">🖐 Manual Trade</div></div>
+      <div class="card">
+        <div class="input-row">
+          <span class="input-label">Stake</span>
+          <div class="inp-stepper">
+            <button onclick="changeVal('mstake',-0.5)">−</button>
+            <span id="mstakeVal">1.00</span>
+            <button onclick="changeVal('mstake',0.5)">+</button>
+          </div>
+        </div>
+        <div class="input-row">
+          <span class="input-label">Duration</span>
+          <div class="inp-stepper">
+            <button onclick="changeVal('mdur',-1)">−</button>
+            <span id="mdurVal">3</span>
+            <button onclick="changeVal('mdur',1)">+</button>
+          </div>
+          <select class="sel" style="width:80px;flex:none;margin-left:6px">
+            <option>Ticks</option><option>Seconds</option><option>Minutes</option>
+          </select>
+        </div>
+      </div>
+      <div class="trade-btns">
+        <button class="trade-btn rise" onclick="placeManualTrade('RISE')">
+          <span class="tb-icon">📈</span>
+          <span class="tb-label">RISE</span>
+          <span class="tb-payout" id="rise-pay">~87%</span>
+        </button>
+        <button class="trade-btn fall" onclick="placeManualTrade('FALL')">
+          <span class="tb-icon">📉</span>
+          <span class="tb-label">FALL</span>
+          <span class="tb-payout" id="fall-pay">~87%</span>
+        </button>
+        <button class="trade-btn even" onclick="placeManualTrade('EVEN')">
+          <span class="tb-icon">♾️</span>
+          <span class="tb-label">EVEN</span>
+          <span class="tb-payout" id="even-pay">~95%</span>
+        </button>
+        <button class="trade-btn odd" onclick="placeManualTrade('ODD')">
+          <span class="tb-icon">🔢</span>
+          <span class="tb-label">ODD</span>
+          <span class="tb-payout" id="odd-pay">~95%</span>
+        </button>
+      </div>
+    </div><!-- /chart -->
+
+    <!-- ══════════════ PAGE: MARKETS ══════════════ -->
+    <div class="page" id="pg-markets">
+      <div class="sect-head"><div class="sect-title">🌍 Markets</div></div>
+      <div class="market-tabs" id="mktTabs">
+        <div class="mktab active" onclick="filterMarket('all',this)">All</div>
+        <div class="mktab" onclick="filterMarket('vol',this)">Volatility</div>
+        <div class="mktab" onclick="filterMarket('bc',this)">Boom/Crash</div>
+        <div class="mktab" onclick="filterMarket('dig',this)">Digits</div>
+        <div class="mktab" onclick="filterMarket('acc',this)">Accumulators</div>
+        <div class="mktab" onclick="filterMarket('fx',this)">Forex</div>
+        <div class="mktab" onclick="filterMarket('idx',this)">Indices</div>
+      </div>
+      <div id="marketList"></div>
+    </div><!-- /markets -->
+
+    <!-- ══════════════ PAGE: CONNECT ══════════════ -->
+    <div class="page" id="pg-connect">
+      <div class="connect-hero">
+        <div class="big-icon">🔐</div>
+        <h2>Connect to Deriv</h2>
+        <p>Secure login via <strong style="color:var(--accent-1)">OAuth2 + PKCE</strong>. You'll be redirected to Deriv to sign in — this app never sees your password or token. <strong style="color:var(--accent-3)">Real Money</strong> accounts only.</p>
+      </div>
+
+      <div class="card card-glow">
+        <div class="card-title">🔐 OAuth2 + PKCE Login</div>
+        <div class="input-row" style="margin-bottom:14px">
+          <span class="input-label">App ID</span>
+          <input class="inp" type="text" value="33CMCtugHowMoinRyyCTS" readonly style="flex:1;opacity:.6;font-size:11px">
+        </div>
+        <button class="btn btn-primary btn-full" id="loginBtn" onclick="connectDeriv()">🔐 Log In with Deriv</button>
+        <div style="font-size:11px;color:var(--text-3);margin-top:12px;line-height:1.7">
+          🔒 Redirects to <strong style="color:var(--text-2)">auth.deriv.com</strong> → you approve access → secure token exchange → trading session opens. Your credentials never touch this app.
+        </div>
+      </div>
+
+      <div class="card" style="background:rgba(0,229,255,.03);border-color:rgba(0,229,255,.15)">
+        <div class="card-title" style="color:var(--accent-1)">⚡ How it works</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.9">
+          <strong style="color:var(--text-1)">1.</strong> Tap <em>Log In with Deriv</em> → redirected to Deriv<br>
+          <strong style="color:var(--text-1)">2.</strong> Sign in &amp; approve on Deriv's secure page<br>
+          <strong style="color:var(--text-1)">3.</strong> Code &amp; state verified in <em>callback.html</em><br>
+          <strong style="color:var(--text-1)">4.</strong> Code exchanged for access token<br>
+          <strong style="color:var(--text-1)">5.</strong> Trading WebSocket URL requested<br>
+          <strong style="color:var(--text-1)">6.</strong> You're connected — Real account only ✅
+        </div>
+      </div>
+
+      <div class="card" id="connectedInfo" style="display:none;border-color:rgba(16,185,129,.3)">
+        <div class="card-title" style="color:var(--accent-3)">✅ Connected</div>
+        <div id="connInfoBody" style="font-size:13px;line-height:1.8;color:var(--text-2)"></div>
+        <button class="btn btn-ghost btn-full" style="margin-top:12px" onclick="disconnectDeriv()">🔌 Disconnect</button>
+      </div>
+    </div><!-- /connect -->
+
+  </div><!-- /pages -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottomnav">
+    <button class="nav-btn active" onclick="showPage('dash',this)">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('bot',this)">
+      <div class="nav-icon">🤖</div>
+      <div class="nav-label">Bot</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('chart',this)">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Chart</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('markets',this)">
+      <div class="nav-icon">🌍</div>
+      <div class="nav-label">Markets</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('connect',this)" style="position:relative">
+      <div class="nav-icon">🔗</div>
+      <div class="nav-label">Connect</div>
+      <div class="notif-dot" id="connectNotif"></div>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
